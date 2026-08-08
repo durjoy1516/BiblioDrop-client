@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-main: #fef3c7;          /* Page Main Background (Light) */
+  --bg-card: #fde68a;          /* Cards & Info Box */
+  --bg-section: #fef9c3;       /* Section Background */
+  --text-primary: #1c1917;     /* Main Text */
+  --text-secondary: #44403c;   /* Muted Text */
+  --border-color: rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"],
+html.dark {
+  --bg-main: #1c1917;          /* Page Main Background (Dark) */
+  --bg-card: #2a241e;          /* Cards & Info Box */
+  --bg-section: #12100e;       /* Section Background */
+  --text-primary: #ffffff;     /* Main Text */
+  --text-secondary: #d6d3d1;   /* Muted Text */
+  --border-color: rgba(245, 158, 11, 0.2);
+}
+
+.theme-bg-main {
+  background-color: var(--bg-main) !important;
+  transition: background-color 0.3s ease;
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card) !important;
+  transition: background-color 0.3s ease;
+}
+
+.theme-bg-section {
+  background-color: var(--bg-section) !important;
+  transition: background-color 0.3s ease;
+}
+
+.theme-text-primary {
+  color: var(--text-primary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.theme-border {
+  border-color: var(--border-color) !important;
+}

@@ -1,18 +1,16 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 export const metadata = {
-  title: "BiblioDrop – Online Book Delivery Management System",
-  description: "Request doorstep delivery for your favorite books from local libraries.",
+  title: "BiblioDrop | Local Library Book Delivery",
+  description: "Your local library, delivered doorstep.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light">
-      <body className="min-h-screen flex flex-col antialiased">
-        <Toaster position="top-right" />
+    <html lang="en" className="dark" data-theme="dark">
+      <body className="min-h-screen flex flex-col theme-bg-main theme-text-primary antialiased">
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />

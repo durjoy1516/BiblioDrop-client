@@ -1,15 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { BookOpen, PlusCircle, Users, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { BookOpen, PlusCircle, Users, Clock, AlertCircle, Loader2 } from "lucide-react";
+import axiosPublic from "@/lib/axios";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function LibrarianDashboard() {
-  const [stats] = useState({
-    totalBooks: 18,
-    activeRentals: 5,
-    pendingRequests: 3,
+  const [stats, setStats] = useState({
+    totalBooks: 0,
+    activePendingRequests: 0,
+    totalEarnings: 0,
   });
+  const [deliveries, setDeliveries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [statsRes, deliveryRes] = await Promise.all([
+          axiosPublic.get("/librarian/stats"),
+          axiosPublic.get("/librarian/deliveries"),
+        ]);
+        if (statsRes.data) setStats(statsRes.data);
+        if (deliveryRes.data) setDeliveries(deliveryRes.data.slice(0, 5)); // Show recent 5
+      } catch (error) {
+        console.error("Error fetching librarian dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
+
+  const chartData = [
+    { name: "Total Books", value: stats.totalBooks || 0 },
+    { name: "Pending Requests", value: stats.activePendingRequests || 0 },
+    { name: "Earnings ($)", value: stats.totalEarnings || 0 },
+  ];
 
   return (
     <div className="space-y-8">
@@ -48,19 +85,34 @@ export default function LibrarianDashboard() {
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs theme-text-secondary font-medium">Currently Rented</p>
-            <h3 className="text-2xl font-bold theme-text-primary">{stats.activeRentals}</h3>
+            <p className="text-xs theme-text-secondary font-medium">Pending Requests</p>
+            <h3 className="text-2xl font-bold theme-text-primary">{stats.activePendingRequests}</h3>
           </div>
         </div>
 
         <div className="theme-bg-card border theme-border p-5 rounded-2xl shadow-md flex items-center gap-4">
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-600">
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs theme-text-secondary font-medium">Pending Requests</p>
-            <h3 className="text-2xl font-bold theme-text-primary">{stats.pendingRequests}</h3>
+            <p className="text-xs theme-text-secondary font-medium">Total Earnings</p>
+            <h3 className="text-2xl font-bold theme-text-primary">${stats.totalEarnings}</h3>
           </div>
+        </div>
+      </div>
+
+      {/* Analytics Chart */}
+      <div className="theme-bg-card border theme-border p-6 rounded-3xl shadow-xl">
+        <h2 className="text-lg font-bold theme-text-primary mb-4">Inventory & Delivery Analytics</h2>
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" stroke="#64748b" />
+              <YAxis stroke="#64748b" />
+              <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155" }} />
+              <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -70,6 +122,9 @@ export default function LibrarianDashboard() {
           <h2 className="text-lg font-bold theme-text-primary flex items-center gap-2">
             <Users className="w-5 h-5 text-amber-500" /> Recent Borrow Requests
           </h2>
+          <Link href="/dashboard/librarian/deliveries" className="text-xs text-amber-500 hover:underline">
+            View All
+          </Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -78,43 +133,39 @@ export default function LibrarianDashboard() {
               <tr className="border-b theme-border theme-text-secondary">
                 <th className="py-3 px-2">Book Title</th>
                 <th className="py-3 px-2">Requested By</th>
-                <th className="py-3 px-2">Request Date</th>
+                <th className="py-3 px-2">Delivery Fee</th>
                 <th className="py-3 px-2">Status</th>
-                <th className="py-3 px-2 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y theme-border">
-              <tr className="hover:bg-amber-500/5 transition-colors">
-                <td className="py-3 px-2 font-semibold theme-text-primary">JavaScript: The Good Parts</td>
-                <td className="py-3 px-2 theme-text-secondary">Alex Johnson</td>
-                <td className="py-3 px-2 theme-text-secondary">08 Aug 2026</td>
-                <td className="py-3 px-2">
-                  <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                    Pending
-                  </span>
-                </td>
-                <td className="py-3 px-2 text-right space-x-2">
-                  <button className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-[10px] transition-colors">
-                    Approve
-                  </button>
-                  <button className="px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-500 font-bold rounded-lg text-[10px] transition-colors">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr className="hover:bg-amber-500/5 transition-colors">
-                <td className="py-3 px-2 font-semibold theme-text-primary">Design Patterns in JS</td>
-                <td className="py-3 px-2 theme-text-secondary">Sarah Connor</td>
-                <td className="py-3 px-2 theme-text-secondary">05 Aug 2026</td>
-                <td className="py-3 px-2">
-                  <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    Approved
-                  </span>
-                </td>
-                <td className="py-3 px-2 text-right">
-                  <span className="text-[11px] theme-text-secondary italic">In Transit</span>
-                </td>
-              </tr>
+              {deliveries.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="py-6 text-center theme-text-secondary">
+                    No recent borrow requests found.
+                  </td>
+                </tr>
+              ) : (
+                deliveries.map((item) => (
+                  <tr key={item._id} className="hover:bg-amber-500/5 transition-colors">
+                    <td className="py-3 px-2 font-semibold theme-text-primary">{item.bookId?.title || "N/A"}</td>
+                    <td className="py-3 px-2 theme-text-secondary">{item.userEmail}</td>
+                    <td className="py-3 px-2 theme-text-primary">${item.deliveryFee}</td>
+                    <td className="py-3 px-2">
+                      <span
+                        className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${
+                          item.status === "Delivered"
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : item.status === "Dispatched"
+                            ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                            : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const AuthContext = createContext(null);
 
@@ -16,6 +17,7 @@ export function AuthProvider({ children }) {
         setUser(JSON.parse(storedUser));
       } catch (e) {
         console.error("Failed to parse user session", e);
+        localStorage.removeItem("user");
       }
     }
     setLoading(false);
@@ -24,11 +26,13 @@ export function AuthProvider({ children }) {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    toast.success("Successfully logged in!"); // 🟢 Toast alert
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    toast.info("Logged out successfully!"); // 🔵 Toast alert
   };
 
   return (
@@ -38,4 +42,17 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+// 🟢 Safety Check সহ useAuth Hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    return {
+      user: null,
+      setUser: () => {},
+      login: () => {},
+      logout: () => {},
+      loading: false,
+    };
+  }
+  return context;
+};

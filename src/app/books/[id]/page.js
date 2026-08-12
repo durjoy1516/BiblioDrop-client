@@ -20,7 +20,7 @@ import {
 
 export default function BookDetailsPage({ params: paramsPromise }) {
   const params = use(paramsPromise);
-  const { id } = params;
+  const id = params?.id;
 
   const [book, setBook] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -34,13 +34,20 @@ export default function BookDetailsPage({ params: paramsPromise }) {
         setLoading(true);
         // Fetch book details from MongoDB API
         const res = await axiosPublic.get(`/books/${id}`);
-        setBook(res.data.book || res.data);
+        // Support both { book: {...} } and direct object responses
+        const bookData = res.data.book || res.data;
+        setBook(bookData);
 
-        // Fetch book reviews
-        const reviewRes = await axiosPublic.get(`/reviews?bookId=${id}`);
-        setReviews(reviewRes.data.reviews || reviewRes.data || []);
+        // Fetch book reviews safely
+        try {
+          const reviewRes = await axiosPublic.get(`/reviews?bookId=${id}`);
+          setReviews(reviewRes.data.reviews || reviewRes.data || []);
+        } catch {
+          setReviews([]);
+        }
       } catch (error) {
         console.error("Error fetching book details:", error);
+        setBook(null);
       } finally {
         setLoading(false);
       }
@@ -52,7 +59,6 @@ export default function BookDetailsPage({ params: paramsPromise }) {
   const handleDeliveryRequest = async () => {
     setRequestLoading(true);
     try {
-      // Trigger delivery request / payment endpoint
       await axiosPublic.post("/orders", { bookId: id });
       setRequestSuccess(true);
     } catch (error) {
@@ -148,7 +154,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
                 <Tag className="w-3.5 h-3.5" />
-                <span>{book?.category || "General"}</span>
+                <span>{book?.category || book?.genre || "General"}</span>
               </div>
 
               <h1 className="text-2xl md:text-4xl font-extrabold theme-text-primary leading-tight">
@@ -177,7 +183,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
                   <Truck className="w-4 h-4 text-amber-500" /> Doorstep Delivery Fee:
                 </span>
                 <span className="text-lg font-extrabold text-amber-600 dark:text-amber-400">
-                  ${book?.deliveryFee !== undefined ? book.deliveryFee : "5.00"}
+                  ${book?.deliveryFee !== undefined ? book.deliveryFee : (book?.price || "5.00")}
                 </span>
               </div>
 
@@ -215,7 +221,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
           </div>
         </motion.div>
 
-        {/* Verified User Reviews Section */}
+        {/* Reader Reviews Section */}
         <div className="theme-bg-card border theme-border rounded-3xl p-6 md:p-8 shadow-lg space-y-6">
           <div className="flex items-center justify-between border-b theme-border pb-4">
             <div>

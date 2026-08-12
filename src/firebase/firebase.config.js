@@ -11,8 +11,13 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Next.js-এ সার্ভার ও ক্লায়েন্ট রিলড জনিত রি-ইনিশিয়ালাইজেশন এড়াতে
+// Next.js-এ সার্ভার ও ক্লায়েন্ট রিলোড জনিত রি-ইনিশিয়ালাইজেশন এড়াতে
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+
+// Google Provider Configuration
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: "select_account", // প্রতিবার অ্যাকাউন্ট সিলেক্ট করার অপশন নিশ্চিত করবে
+});

@@ -5,9 +5,34 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axiosPublic from "@/lib/axios";
 import BookCard from "@/components/BookCard";
 import SkeletonCard from "@/components/SkeletonCard";
-import { Search, Filter, RotateCcw, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Search, RotateCcw, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 
-const CATEGORIES = ["All", "Fiction", "Sci-Fi", "Academic", "Drama", "Romance", "Science"];
+const CATEGORIES = [
+  "All",
+  "Fiction",
+  "Sci-Fi",
+  "Academic",
+  "Drama",
+  "Romance",
+  "Science",
+  "Dystopian",
+  "Classic",
+  "Self-Help",
+  "Philosophy",
+  "History",
+  "Fantasy",
+  "Finance",
+  "Psychology",
+  "Biography",
+  "Historical Fiction",
+  "Spirituality",
+  "Horror",
+  "Memoir",
+  "Adventure",
+  "Thriller",
+  "Technology",
+  "Business"
+];
 
 export default function BrowseBooksPage() {
   const router = useRouter();
@@ -22,13 +47,15 @@ export default function BrowseBooksPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [availability, setAvailability] = useState("all"); // 'all', 'available', 'checkout'
+  const [availability, setAvailability] = useState("all");
   const [maxFee, setMaxFee] = useState(50);
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 8; // Items per page
+  
+  // Set limit to 'all' to fetch all 33 books at once, or set a number (e.g., 33)
+  const limit = "all"; 
 
   // Fetch Books Function
   const fetchBooks = useCallback(async () => {
@@ -37,7 +64,6 @@ export default function BrowseBooksPage() {
       const params = new URLSearchParams({
         page: currentPage,
         limit,
-        status: "published",
       });
 
       if (searchTerm) params.append("search", searchTerm);
@@ -48,7 +74,7 @@ export default function BrowseBooksPage() {
       const res = await axiosPublic.get(`/books?${params.toString()}`);
       
       const fetchedBooks = res.data.books || res.data || [];
-      const total = res.data.totalPages || Math.ceil((res.data.totalCount || fetchedBooks.length) / limit) || 1;
+      const total = res.data.totalPages || 1;
 
       setBooks(fetchedBooks);
       setTotalPages(total);
@@ -58,7 +84,7 @@ export default function BrowseBooksPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, selectedCategory, availability, maxFee]);
+  }, [currentPage, searchTerm, selectedCategory, availability, maxFee, limit]);
 
   useEffect(() => {
     fetchBooks();
@@ -142,10 +168,10 @@ export default function BrowseBooksPage() {
             </div>
           </div>
 
-          {/* Delivery Fee Range & Reset Button */}
+          {/* Delivery Fee / Price Range & Reset Button */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t theme-border text-xs theme-text-secondary">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <span className="font-semibold text-sm theme-text-primary">Max Delivery Fee: ${maxFee}</span>
+              <span className="font-semibold text-sm theme-text-primary">Max Fee/Price: ${maxFee}</span>
               <input
                 type="range"
                 min="0"
@@ -201,7 +227,7 @@ export default function BrowseBooksPage() {
           </div>
         )}
 
-        {/* Server-Side Pagination Controls */}
+        {/* Pagination Controls - Only shows if limit is numeric and totalPages > 1 */}
         {!loading && totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-6">
             <button

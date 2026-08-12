@@ -4,6 +4,8 @@ import { Tag, ArrowRight } from "lucide-react";
 
 export default function BookCard({ book }) {
   const isUnavailable = book?.status === "Checked Out" || book?.available === false;
+  // Ensure valid ID fallback
+  const bookId = book?._id || book?.id;
 
   return (
     <div className="group theme-bg-card border theme-border rounded-2xl p-4 flex flex-col justify-between hover:border-amber-500 hover:shadow-lg transition-all duration-300 relative">
@@ -27,7 +29,7 @@ export default function BookCard({ book }) {
           {/* Category Badge */}
           <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-md text-amber-400 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
             <Tag className="w-3 h-3" />
-            {book?.category || "General"}
+            {book?.category || book?.genre || "General"}
           </div>
         </div>
 
@@ -45,12 +47,12 @@ export default function BookCard({ book }) {
         <div>
           <span className="text-[10px] theme-text-secondary uppercase tracking-wider block">Delivery Fee</span>
           <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">
-            ${book?.deliveryFee !== undefined ? book.deliveryFee : "5.00"}
+            ${book?.deliveryFee !== undefined ? book.deliveryFee : (book?.price || "5.00")}
           </span>
         </div>
 
         <Link
-          href={`/books/${book?._id || book?.id}`}
+          href={`/books/${bookId}`}
           className="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-2 rounded-lg transition-colors"
         >
           Details <ArrowRight className="w-3.5 h-3.5" />

@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { 
   User, 
   BookOpen, 
   PlusCircle, 
   Users, 
   BarChart2, 
-  Settings, 
   LogOut, 
   Home,
   ShieldCheck,
@@ -17,8 +17,9 @@ import {
 
 export default function Sidebar({ userRole = "user" }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
 
-  // Role-based Navigation Links
   const menuConfig = {
     user: [
       { name: "My Profile", href: "/dashboard/user", icon: User },
@@ -38,10 +39,15 @@ export default function Sidebar({ userRole = "user" }) {
 
   const links = menuConfig[userRole] || menuConfig.user;
 
+  // 🔴 Sign Out & Redirect to Homepage
+  const handleSignOut = () => {
+    logout();
+    router.push("/");
+  };
+
   return (
     <aside className="w-64 theme-bg-card border-r theme-border min-h-screen flex flex-col justify-between p-4">
       <div className="space-y-6">
-        {/* Brand / Header */}
         <div className="px-3 py-2 border-b theme-border flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="p-1.5 bg-amber-500 rounded-lg text-slate-950 font-bold">
@@ -53,14 +59,12 @@ export default function Sidebar({ userRole = "user" }) {
           </Link>
         </div>
 
-        {/* User Role Badge */}
         <div className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
           <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider">
             {userRole} Panel
           </span>
         </div>
 
-        {/* Navigation Menu */}
         <nav className="space-y-1">
           {links.map((item) => {
             const Icon = item.icon;
@@ -84,7 +88,6 @@ export default function Sidebar({ userRole = "user" }) {
         </nav>
       </div>
 
-      {/* Footer Actions */}
       <div className="space-y-1 pt-4 border-t theme-border">
         <Link
           href="/"
@@ -94,11 +97,8 @@ export default function Sidebar({ userRole = "user" }) {
         </Link>
 
         <button
-          onClick={() => {
-            // Handle Logout
-            window.location.href = "/login";
-          }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-rose-500 hover:bg-rose-500/10 transition-colors"
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" /> Sign Out
         </button>

@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpen, Moon, Sun, Menu, Search, User, LogOut, LayoutDashboard, UserCheck } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, Moon, Sun, Search, User, LogOut, LayoutDashboard, UserCheck } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
   const [theme, setTheme] = useState("dark");
   const [mounted, setMounted] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // State to control dropdown visibility
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -25,7 +26,6 @@ export default function Navbar() {
       document.documentElement.classList.remove("dark");
     }
 
-    // Outside click event listener to close dropdown
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -54,6 +54,13 @@ export default function Navbar() {
     return "/dashboard/user";
   };
 
+  // 🔴 Logout & Auto Redirect to Homepage
+  const handleLogout = () => {
+    setIsMenuOpen(false);
+    logout();
+    router.push("/");
+  };
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Browse Books", href: "/books" },
@@ -62,11 +69,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Top Header Bar */}
       <div className="theme-bg-card border-b theme-border px-4 lg:px-8 py-2.5 shadow-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <div className="p-2 bg-amber-500 rounded-xl text-slate-950 font-bold transition-transform group-hover:scale-105">
               <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
@@ -76,7 +81,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Quick Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
             <form action="/books" className="relative w-full">
               <input
@@ -94,9 +98,7 @@ export default function Navbar() {
             </form>
           </div>
 
-          {/* Right Actions & Auth */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Theme Toggle Button */}
             {mounted && (
               <button
                 onClick={toggleTheme}
@@ -111,9 +113,7 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Dynamic Auth Section */}
             {user ? (
-              /* Logged In User Profile Dropdown */
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
@@ -133,7 +133,6 @@ export default function Navbar() {
                   )}
                 </button>
 
-                {/* Profile Dropdown Content - Controlled via React State */}
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 p-3 theme-bg-card rounded-2xl border theme-border shadow-2xl z-[999] space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="px-2 py-1.5 border-b theme-border">
@@ -152,7 +151,6 @@ export default function Navbar() {
                         </Link>
                       </li>
 
-                      {/* Added Profile / Edit Profile Option */}
                       <li>
                         <Link
                           href="/dashboard/profile"
@@ -165,10 +163,7 @@ export default function Navbar() {
 
                       <li>
                         <button
-                          onClick={() => {
-                            setIsMenuOpen(false);
-                            logout();
-                          }}
+                          onClick={handleLogout}
                           className="w-full flex items-center gap-2.5 py-2 px-2.5 font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors text-left"
                         >
                           <LogOut className="w-4 h-4" /> Logout
@@ -179,7 +174,6 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              /* Guest User Auth Buttons */
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
@@ -199,11 +193,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Links Bar */}
       <nav className="theme-bg-section border-t theme-border px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-10">
-          
-          {/* Desktop Links */}
           <ul className="hidden lg:flex items-center gap-6 text-sm font-medium">
             {navLinks.map((link) => (
               <li key={link.href}>

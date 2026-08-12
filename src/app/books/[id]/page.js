@@ -16,6 +16,7 @@ import {
   Clock,
   ShieldCheck,
   Send,
+  CreditCard,
 } from "lucide-react";
 
 export default function BookDetailsPage({ params: paramsPromise }) {
@@ -32,13 +33,10 @@ export default function BookDetailsPage({ params: paramsPromise }) {
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
-        // Fetch book details from MongoDB API
         const res = await axiosPublic.get(`/books/${id}`);
-        // Support both { book: {...} } and direct object responses
         const bookData = res.data.book || res.data;
         setBook(bookData);
 
-        // Fetch book reviews safely
         try {
           const reviewRes = await axiosPublic.get(`/reviews?bookId=${id}`);
           setReviews(reviewRes.data.reviews || reviewRes.data || []);
@@ -56,14 +54,31 @@ export default function BookDetailsPage({ params: paramsPromise }) {
     if (id) fetchBookDetails();
   }, [id]);
 
+  // 💳 Stripe Payment & Delivery Request Handler
   const handleDeliveryRequest = async () => {
     setRequestLoading(true);
     try {
-      await axiosPublic.post("/orders", { bookId: id });
+      // Stripe/Transaction-এর জন্য ডায়নামিক আইডি তৈরি
+      const generatedTransactionId = `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+      // ব্যাকএন্ডের সাথে Stripe Checkout বা পেমেন্ট ইন্টিগ্রেশন
+      const res = await axiosPublic.post("/deliveries", { 
+        bookId: id,
+        deliveryFee: book?.deliveryFee || 5.00,
+        transactionId: generatedTransactionId // Stripe Transaction ID Validation Fix
+      });
+
+      // যদি আপনার ব্যাকএন্ড থেকে Stripe Checkout URL রিটার্ন করে:
+      if (res.data?.url) {
+        window.location.href = res.data.url; // Stripe Payment Page-এ রিডাইরেক্ট করবে
+        return;
+      }
+
       setRequestSuccess(true);
     } catch (error) {
       console.error("Order request failed:", error);
-      alert("Failed to request delivery. Please login or try again.");
+      const errorMessage = error.response?.data?.message || "Failed to request delivery. Please login or try again.";
+      alert(errorMessage);
     } finally {
       setRequestLoading(false);
     }
@@ -121,7 +136,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
           transition={{ duration: 0.5 }}
           className="grid grid-cols-1 md:grid-cols-12 gap-8 theme-bg-card border theme-border rounded-3xl p-6 md:p-8 shadow-xl"
         >
-          {/* Cover Image Container */}
+          {/* Cover Image */}
           <div className="md:col-span-5 relative">
             <div className="relative w-full h-80 md:h-full min-h-[360px] rounded-2xl overflow-hidden border theme-border shadow-md">
               <Image
@@ -131,10 +146,10 @@ export default function BookDetailsPage({ params: paramsPromise }) {
                 }
                 alt={book?.title || "Book Cover"}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
                 className="object-cover"
               />
 
-              {/* Status Badge */}
               <div className="absolute top-3 left-3">
                 {isUnavailable ? (
                   <span className="bg-rose-500/90 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
@@ -189,7 +204,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
 
               {requestSuccess ? (
                 <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-xs rounded-xl flex items-center gap-2 font-semibold">
-                  <CheckCircle className="w-4 h-4" /> Delivery request submitted successfully!
+                  <CheckCircle className="w-4 h-4" /> Payment & Delivery request submitted successfully!
                 </div>
               ) : (
                 <button
@@ -198,12 +213,12 @@ export default function BookDetailsPage({ params: paramsPromise }) {
                   className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                 >
                   {requestLoading ? (
-                    "Processing..."
+                    "Processing Payment..."
                   ) : isUnavailable ? (
                     "Currently Unavailable"
                   ) : (
                     <>
-                      <Send className="w-4 h-4" /> Request Delivery
+                      <CreditCard className="w-4 h-4" /> Pay Delivery Fee & Request
                     </>
                   )}
                 </button>
@@ -214,7 +229,7 @@ export default function BookDetailsPage({ params: paramsPromise }) {
                   <Clock className="w-3 h-3" /> Delivery in 24-48 Hours
                 </span>
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> Verified Provider
+                  <ShieldCheck className="w-3 h-3" /> Secured by Stripe
                 </span>
               </div>
             </div>

@@ -9,7 +9,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Initial user fetch / session restore logic
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -26,13 +25,14 @@ export function AuthProvider({ children }) {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    toast.success("Successfully logged in!"); // 🟢 Toast alert
+    toast.success("Successfully logged in!");
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    toast.info("Logged out successfully!"); // 🔵 Toast alert
+    localStorage.removeItem("token"); // Clean up token as well
+    toast.info("Logged out successfully!");
   };
 
   return (
@@ -42,7 +42,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// 🟢 Safety Check সহ useAuth Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

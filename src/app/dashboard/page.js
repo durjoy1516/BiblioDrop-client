@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import axiosPublic from "@/lib/axios";
-
-// Import components from components/dashboard
-import StatCards from "@/components/dashboard/StatCards"; // আপনার পাঠানো StatCards component
-import Charts from "@/components/dashboard/Charts";       // আপনার পাঠানো Charts component
-import { ShoppingBag, User, Loader2 } from "lucide-react";
+import { BookMarked, Clock, CheckCircle2, ShoppingBag, User, Loader2 } from "lucide-react";
 
 export default function UserDashboardPage() {
   const { user } = useAuth();
@@ -24,13 +20,13 @@ export default function UserDashboardPage() {
     const fetchUserDashboardData = async () => {
       try {
         setLoading(true);
-        // Backend GET route /deliveries/my-loans
+        // ব্যাকএন্ডের /deliveries/my-loans এন্ডপয়েন্টে রিকোয়েস্ট
         const res = await axiosPublic.get("/deliveries/my-loans");
         const list = Array.isArray(res.data) ? res.data : [];
 
         setDeliveries(list);
 
-        // Stats calculation for StatCards component
+        // Status অনুযায়ী Statistics হিসাব করা
         const total = list.length;
         const active = list.filter(
           (item) => item.status === "Pending" || item.status === "Dispatched"
@@ -66,7 +62,7 @@ export default function UserDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Top Welcome Banner */}
+      {/* Welcome Banner */}
       <div className="theme-bg-card border theme-border p-6 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold theme-text-primary">
@@ -81,13 +77,40 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      {/* 1. StatCards Component */}
-      <StatCards stats={stats} role={user?.role || "user"} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="theme-bg-card border theme-border p-5 rounded-2xl shadow-md flex items-center gap-4">
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500">
+            <BookMarked className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs theme-text-secondary font-medium">Total Borrowed</p>
+            <h3 className="text-2xl font-bold theme-text-primary">{stats.totalBorrowed}</h3>
+          </div>
+        </div>
 
-      {/* 2. Analytics Chart Component */}
-      <Charts />
+        <div className="theme-bg-card border theme-border p-5 rounded-2xl shadow-md flex items-center gap-4">
+          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs theme-text-secondary font-medium">Active Loans</p>
+            <h3 className="text-2xl font-bold theme-text-primary">{stats.activeLoans}</h3>
+          </div>
+        </div>
 
-      {/* 3. Recent Borrow History Table */}
+        <div className="theme-bg-card border theme-border p-5 rounded-2xl shadow-md flex items-center gap-4">
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs theme-text-secondary font-medium">Returned / Delivered</p>
+            <h3 className="text-2xl font-bold theme-text-primary">{stats.returnedBooks}</h3>
+          </div>
+        </div>
+      </div>
+
+      {/* Borrow History Table */}
       <div className="theme-bg-card border theme-border rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b theme-border pb-4">
           <h2 className="text-lg font-bold theme-text-primary flex items-center gap-2">

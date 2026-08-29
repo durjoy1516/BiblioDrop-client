@@ -67,7 +67,7 @@ export default function AdminDashboard() {
         await Promise.all([
           axiosPublic.get("/admin/stats"),
           axiosPublic.get("/admin/users"),
-          axiosPublic.get("/admin/category-stats"),
+          admin/category-stats"),
         ]);
 
       // =================================================

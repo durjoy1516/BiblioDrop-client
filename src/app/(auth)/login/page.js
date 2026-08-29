@@ -1,10 +1,16 @@
+// ```jsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mail, Lock, LogIn, ArrowLeft } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  LogIn,
+  ArrowLeft,
+} from "lucide-react";
 import axiosPublic from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -26,12 +32,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // =====================================================
+  // HANDLE INPUT CHANGE
+  // =====================================================
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+
+    // Clear previous error when user starts typing
+    if (error) {
+      setError("");
+    }
   };
+
+  // =====================================================
+  // ROLE BASED REDIRECT
+  // =====================================================
 
   const handleRoleRedirect = (user) => {
     if (user?.role === "admin") {
@@ -43,7 +62,10 @@ export default function LoginPage() {
     }
   };
 
-  // Email / Password Login
+  // =====================================================
+  // EMAIL / PASSWORD LOGIN
+  // =====================================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -56,11 +78,17 @@ export default function LoginPage() {
         formData
       );
 
-      const userData = res.data?.user || res.data;
-      const token = res.data?.token || res.data?.accessToken;
+      const userData =
+        res.data?.user || res.data;
+
+      const token =
+        res.data?.token ||
+        res.data?.accessToken;
 
       if (!userData) {
-        throw new Error("User information was not returned.");
+        throw new Error(
+          "User information was not returned."
+        );
       }
 
       // Save user + token
@@ -70,12 +98,25 @@ export default function LoginPage() {
 
       handleRoleRedirect(userData);
     } catch (err) {
-      console.error("Login Error:", err);
+      // 401 means wrong email/password.
+      // This is an expected authentication response,
+      // so we don't log it as a console error.
 
+      if (err.response?.status === 401) {
+        const message =
+          err.response?.data?.message ||
+          "Invalid email or password.";
+
+        setError(message);
+        return;
+      }
+
+      // Other API errors
       const message =
         err.response?.data?.message ||
         err.response?.data?.error ||
-        "Invalid credentials. Please try again.";
+        err.message ||
+        "Login failed. Please try again.";
 
       setError(message);
     } finally {
@@ -83,30 +124,54 @@ export default function LoginPage() {
     }
   };
 
-  // Google Login
+  // =====================================================
+  // GOOGLE LOGIN
+  // =====================================================
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
 
-    const provider = new GoogleAuthProvider();
+    const provider =
+      new GoogleAuthProvider();
 
     provider.setCustomParameters({
       prompt: "select_account",
     });
 
     try {
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
+      // Open Google popup
+      const result =
+        await signInWithPopup(
+          auth,
+          provider
+        );
 
-      const res = await axiosPublic.post("/auth/google", {
-        name: firebaseUser.displayName,
-        email: firebaseUser.email,
-        photoURL: firebaseUser.photoURL,
-        role: "user",
-      });
+      const firebaseUser =
+        result.user;
 
-      const userData = res.data?.user || res.data;
-      const token = res.data?.token || res.data?.accessToken;
+      // Send Google user information to backend
+      const res =
+        await axiosPublic.post(
+          "/auth/google",
+          {
+            name:
+              firebaseUser.displayName,
+            email:
+              firebaseUser.email,
+            photoURL:
+              firebaseUser.photoURL,
+            role: "user",
+          }
+        );
+
+      const userData =
+        res.data?.user ||
+        res.data;
+
+      const token =
+        res.data?.token ||
+        res.data?.accessToken;
 
       if (!userData) {
         throw new Error(
@@ -114,41 +179,87 @@ export default function LoginPage() {
         );
       }
 
+      // Save user + token
       login(userData, token);
 
+      // Redirect based on role
       handleRoleRedirect(userData);
     } catch (err) {
-      console.error("Google Login Error:", err);
+      // =================================================
+      // GOOGLE POPUP CLOSED
+      // =================================================
+      // This is NOT a real error.
+      // User simply cancelled the Google login popup.
 
-      if (err.code === "auth/popup-closed-by-user") {
-        toast.info("Sign-in cancelled.");
-      } else if (err.code === "auth/unauthorized-domain") {
+      if (
+        err.code ===
+        "auth/popup-closed-by-user"
+      ) {
+        toast.info(
+          "Sign-in cancelled."
+        );
+        return;
+      }
+
+      // =================================================
+      // UNAUTHORIZED DOMAIN
+      // =================================================
+
+      if (
+        err.code ===
+        "auth/unauthorized-domain"
+      ) {
         toast.error(
           "This domain is not authorized in Firebase Console."
         );
-      } else {
-        const backendMessage =
-          err.response?.data?.message ||
-          err.response?.data?.error;
-
-        toast.error(
-          backendMessage || "Google Sign-In failed!"
-        );
+        return;
       }
+
+      // =================================================
+      // OTHER GOOGLE / BACKEND ERRORS
+      // =================================================
+
+      console.error(
+        "Google Login Error:",
+        err
+      );
+
+      const backendMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error;
+
+      toast.error(
+        backendMessage ||
+          err.message ||
+          "Google Sign-In failed!"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div className="min-h-screen theme-bg-main flex items-center justify-center px-4 py-12">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
+        initial={{
+          opacity: 0,
+          scale: 0.95,
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+        }}
+        transition={{
+          duration: 0.4,
+        }}
         className="max-w-md w-full theme-bg-card border theme-border rounded-3xl p-8 shadow-2xl space-y-6"
       >
         {/* Header */}
+
         <div>
           <Link
             href="/"
@@ -163,12 +274,13 @@ export default function LoginPage() {
           </h2>
 
           <p className="text-xs theme-text-secondary mt-1">
-            Sign in to access your library account and
-            delivery status.
+            Sign in to access your library
+            account and delivery status.
           </p>
         </div>
 
         {/* Error */}
+
         {error && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs rounded-xl font-medium text-center">
             {error}
@@ -176,11 +288,13 @@ export default function LoginPage() {
         )}
 
         {/* Email Login Form */}
+
         <form
           onSubmit={handleSubmit}
           className="space-y-4"
         >
           {/* Email */}
+
           <div className="space-y-1">
             <label className="text-xs font-semibold theme-text-primary">
               Email Address
@@ -203,6 +317,7 @@ export default function LoginPage() {
           </div>
 
           {/* Password */}
+
           <div className="space-y-1">
             <label className="text-xs font-semibold theme-text-primary">
               Password
@@ -225,6 +340,7 @@ export default function LoginPage() {
           </div>
 
           {/* Submit */}
+
           <button
             type="submit"
             disabled={loading}
@@ -242,6 +358,7 @@ export default function LoginPage() {
         </form>
 
         {/* Divider */}
+
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t theme-border" />
@@ -255,6 +372,7 @@ export default function LoginPage() {
         </div>
 
         {/* Google Login */}
+
         <button
           onClick={handleGoogleLogin}
           type="button"
@@ -291,9 +409,11 @@ export default function LoginPage() {
         </button>
 
         {/* Register Link */}
+
         <div className="text-center pt-2 border-t theme-border">
           <p className="text-xs theme-text-secondary">
             Don't have an account?{" "}
+
             <Link
               href="/register"
               className="text-amber-600 dark:text-amber-400 font-bold hover:underline"
@@ -306,3 +426,4 @@ export default function LoginPage() {
     </div>
   );
 }
+// ```

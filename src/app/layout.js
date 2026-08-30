@@ -2,8 +2,16 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastContainer } from "react-toastify";
+import { Plus_Jakarta_Sans } from "next/font/google";
+
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
 
 export const metadata = {
   title: "BiblioDrop | Local Library Book Delivery",
@@ -12,14 +20,26 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark" data-theme="dark">
-      <body className="min-h-screen flex flex-col theme-bg-main theme-text-primary antialiased">
-        {/* AuthProvider-কে একদম উপরে র‍্যাপ করতে হবে */}
+    <html
+      lang="en"
+      className={`dark ${plusJakartaSans.variable}`}
+      data-theme="dark"
+    >
+      <body className="min-h-screen flex flex-col theme-bg-main theme-text-primary antialiased font-sans">
         <AuthProvider>
-          <Navbar /> {/* Navbar অবশ্যই AuthProvider-এর ভেতরে থাকতে হবে */}
-          <main className="flex-grow">{children}</main>
+          <Navbar />
+
+          <main className="flex-grow">
+            {children}
+          </main>
+
           <Footer />
-          <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            theme="dark"
+          />
         </AuthProvider>
       </body>
     </html>

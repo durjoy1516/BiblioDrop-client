@@ -127,7 +127,7 @@ return ( <aside className="w-64 min-h-screen theme-bg-card border-r theme-border
          className="flex items-center gap-2"
        > <div className="p-1.5 bg-amber-500 rounded-lg text-slate-950"> <BookOpen className="w-5 h-5" /> </div>
 
-```
+{/* ``` */}
         <span className="text-lg font-extrabold theme-text-primary">
           Biblio<span className="text-amber-500">Drop</span>
         </span>

@@ -3,23 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --bg-main: #fef3c7;          /* Page Main Background (Light) */
-  --bg-card: #fde68a;          /* Cards & Info Box */
-  --bg-section: #fef9c3;       /* Section Background */
-  --text-primary: #1c1917;     /* Main Text */
-  --text-secondary: #44403c;   /* Muted Text */
+  --bg-main: #fef3c7;
+  --bg-card: #fde68a;
+  --bg-section: #fef9c3;
+  --text-primary: #1c1917;
+  --text-secondary: #44403c;
   --border-color: rgba(245, 158, 11, 0.3);
 }
 
 [data-theme="dark"],
 html.dark {
-  --bg-main: #1c1917;          /* Page Main Background (Dark) */
-  --bg-card: #2a241e;          /* Cards & Info Box */
-  --bg-section: #12100e;       /* Section Background */
-  --text-primary: #ffffff;     /* Main Text */
-  --text-secondary: #d6d3d1;   /* Muted Text */
+  --bg-main: #1c1917;
+  --bg-card: #2a241e;
+  --bg-section: #12100e;
+  --text-primary: #ffffff;
+  --text-secondary: #d6d3d1;
   --border-color: rgba(245, 158, 11, 0.2);
 }
+
+/* ================================
+   Global Font
+================================ */
+
+@layer base {
+  html {
+    font-family: var(--font-plus-jakarta), sans-serif;
+  }
+
+  body {
+    font-family: var(--font-plus-jakarta), sans-serif;
+  }
+}
+
+/* ================================
+   Theme Utilities
+================================ */
 
 .theme-bg-main {
   background-color: var(--bg-main) !important;

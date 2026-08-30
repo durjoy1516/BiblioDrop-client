@@ -6,97 +6,204 @@ import {
   useEffect,
   useState,
 } from "react";
+
 import { toast } from "react-toastify";
+
 import axiosPublic from "@/lib/axios";
 
-const AuthContext = createContext(null);
+const AuthContext =
+  createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+}) {
+  const [user, setUser] =
+    useState(null);
 
-  // Restore logged-in user after page reload
+  const [loading, setLoading] =
+    useState(true);
+
+  // =====================================================
+  // RESTORE SESSION
+  // =====================================================
+
   useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-        }
-
-        // Verify the current session with backend
+    const restoreSession =
+      async () => {
         try {
-          const res = await axiosPublic.get("/auth/me");
+          // =================================================
+          // First restore user from localStorage
+          // =================================================
 
-          if (res.data?.user) {
-            setUser(res.data.user);
-            localStorage.setItem(
-              "user",
-              JSON.stringify(res.data.user)
+          const storedUser =
+            localStorage.getItem(
+              "user"
             );
+
+          if (storedUser) {
+            try {
+              const parsedUser =
+                JSON.parse(
+                  storedUser
+                );
+
+              setUser(
+                parsedUser
+              );
+            } catch {
+              localStorage.removeItem(
+                "user"
+              );
+            }
+          }
+
+          // =================================================
+          // Verify session with backend
+          //
+          // axios interceptor will automatically attach
+          // the JWT from localStorage if available.
+          // =================================================
+
+          try {
+            const res =
+              await axiosPublic.get(
+                "/auth/me"
+              );
+
+            if (
+              res.data?.user
+            ) {
+              setUser(
+                res.data.user
+              );
+
+              localStorage.setItem(
+                "user",
+                JSON.stringify(
+                  res.data.user
+                )
+              );
+            }
+          } catch (error) {
+            console.warn(
+              "Session verification failed:",
+              error.response
+                ?.data?.message ||
+                error.message
+            );
+
+            // Don't immediately remove local user.
+            // The backend session may fail temporarily
+            // while the local authentication state is valid.
           }
         } catch (error) {
-          // If backend session verification fails,
-          // keep local user only if a token exists.
-          console.warn(
-            "Session verification failed:",
-            error.response?.data?.message || error.message
+          console.error(
+            "Failed to restore user session:",
+            error
           );
+
+          localStorage.removeItem(
+            "user"
+          );
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "accessToken"
+          );
+
+          setUser(null);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Failed to restore user session:", error);
-
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        localStorage.removeItem("accessToken");
-
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
     restoreSession();
   }, []);
 
-  // Login
-  const login = (userData, token = null) => {
-    if (!userData) return;
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
+  const login = (
+    userData,
+    token = null
+  ) => {
+    if (!userData) {
+      return;
+    }
+
+    // =================================================
+    // Save user
+    // =================================================
 
     setUser(userData);
 
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem(
+      "user",
+      JSON.stringify(
+        userData
+      )
+    );
 
-    // Save token if backend sends one
+    // =================================================
+    // Save JWT token
+    // =================================================
+
     if (token) {
-      localStorage.setItem("token", token);
+      localStorage.setItem(
+        "token",
+        token
+      );
     }
 
-    toast.success("Successfully logged in!");
+    toast.success(
+      "Successfully logged in!"
+    );
   };
 
-  // Logout
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
   const logout = async () => {
     try {
-      // Tell backend to destroy/clear the session cookie
-      await axiosPublic.post("/auth/logout");
+      await axiosPublic.post(
+        "/auth/logout"
+      );
     } catch (error) {
       console.warn(
         "Backend logout failed:",
-        error.response?.data?.message || error.message
+        error.response
+          ?.data?.message ||
+          error.message
       );
     } finally {
       setUser(null);
 
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem(
+        "user"
+      );
 
-      toast.info("Logged out successfully!");
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "accessToken"
+      );
+
+      toast.info(
+        "Logged out successfully!"
+      );
     }
   };
+
+  // =====================================================
+  // CONTEXT
+  // =====================================================
 
   return (
     <AuthContext.Provider
@@ -113,14 +220,22 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
+// =====================================================
+// USE AUTH
+// =====================================================
 
-  if (!context) {
-    throw new Error(
-      "useAuth must be used inside an AuthProvider"
-    );
-  }
+export const useAuth =
+  () => {
+    const context =
+      useContext(
+        AuthContext
+      );
 
-  return context;
-};
+    if (!context) {
+      throw new Error(
+        "useAuth must be used inside an AuthProvider"
+      );
+    }
+
+    return context;
+  };

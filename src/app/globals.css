@@ -21,23 +21,9 @@ html.dark {
   --border-color: rgba(245, 158, 11, 0.2);
 }
 
-/* ================================
-   Global Font
-================================ */
-
-@layer base {
-  html {
-    font-family: var(--font-plus-jakarta), sans-serif;
-  }
-
-  body {
-    font-family: var(--font-plus-jakarta), sans-serif;
-  }
-}
-
-/* ================================
-   Theme Utilities
-================================ */
+/* ============================================
+   THEME UTILITIES
+============================================ */
 
 .theme-bg-main {
   background-color: var(--bg-main) !important;

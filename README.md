@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+📚 BiblioDrop Client
 
-## Getting Started
+A modern, responsive Next.js frontend for BiblioDrop — an online book delivery management system connecting readers with local libraries and independent book owners.
 
-First, run the development server:
+🌐 Links
 
-```bash
+Live Site: https://YOUR-CLIENT-URL.vercel.app
+
+Client Repo: https://github.com/durjoy1516/BiblioDrop-client
+
+Backend Repo: https://github.com/durjoy1516/BiblioDrop-server
+
+Backend API: https://biblio-drop-server-two.vercel.app
+
+✨ Key Features
+
+🔐 Email/password & Google authentication
+
+👥 Role-based dashboards: User, Librarian & Admin
+
+📚 Browse, search, filter, sort & paginate books
+
+💳 Stripe payment for delivery fees
+
+🚚 Delivery tracking
+
+⭐ Verified reviews for delivered books
+
+🖼️ ImgBB image hosting
+
+📊 Dashboard analytics with Recharts
+
+🎨 Framer Motion animations
+
+📱 Fully responsive UI
+
+🔔 Toast notifications & loading states
+
+🛠️ Tech Stack
+
+Next.js
+
+React
+
+Tailwind CSS
+
+Firebase Authentication
+
+Stripe.js
+
+Axios
+
+Recharts
+
+Framer Motion
+
+Lucide React
+
+React Toastify
+
+🚀 Run Locally
+
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create .env.local with the required Firebase, ImgBB, Stripe and API environment variables.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+👨‍💻 Developer
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Durjoy — Full-Stack Web Developer

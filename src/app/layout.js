@@ -9,23 +9,34 @@ import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta",
+  weight: [
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+  ],
   display: "swap",
 });
 
 export const metadata = {
   title: "BiblioDrop | Local Library Book Delivery",
-  description: "Your local library, delivered doorstep.",
+  description:
+    "Your local library, delivered doorstep.",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}) {
   return (
     <html
       lang="en"
-      className={`dark ${plusJakartaSans.variable}`}
+      className="dark"
       data-theme="dark"
     >
-      <body className="min-h-screen flex flex-col theme-bg-main theme-text-primary antialiased font-sans">
+      <body
+        className={`${plusJakartaSans.className} min-h-screen flex flex-col theme-bg-main theme-text-primary antialiased`}
+      >
         <AuthProvider>
           <Navbar />
 
